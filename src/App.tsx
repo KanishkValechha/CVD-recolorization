@@ -45,9 +45,8 @@ export default function App() {
     try {
       const formData = new FormData();
       formData.append("image", capturedImage);
-
       const res = await fetch(
-        `http://${window.location.hostname}:5000/correct/${deficiency}?strength=1.0`,
+        `http://${import.meta.env.VITE_API_URL}:5000/correct/${deficiency}?strength=1.0`,
         {
           method: "POST",
           body: formData,
