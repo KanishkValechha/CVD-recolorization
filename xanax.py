@@ -7,7 +7,6 @@ from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
-# Set up logging
 logging.basicConfig(level=logging.INFO, 
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -114,10 +113,9 @@ def process_frame(frame_data, deficiency):
             out_rgb = color_recolor(img_rgb, sim_mat, dalt_mat)
             
             out_bgr = cv2.cvtColor(out_rgb, cv2.COLOR_RGB2BGR)
-            # Use a lower JPEG quality (70) for faster transmission
+
             _, buffer = cv2.imencode('.jpg', out_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
-            
-            # Convert back to base64 string
+
             encoded_frame = base64.b64encode(buffer).decode('utf-8')
             return f"data:image/jpeg;base64,{encoded_frame}"
         except base64.binascii.Error as e:

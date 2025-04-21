@@ -17,7 +17,6 @@ export default function App() {
   const socketRef = useRef<Socket | null>(null);
   const streamIntervalRef = useRef<number | null>(null);
 
-  // Connect to the WebSocket server when video mode is activated
   useEffect(() => {
     if (isVideoMode && !socketRef.current) {
       try {
@@ -41,7 +40,6 @@ export default function App() {
             `Connection error: ${err.message}. Please check if the server is running.`
           );
 
-          // Stop streaming if it was active
           if (isVideoStreaming) {
             stopVideoStreaming();
           }
@@ -63,7 +61,6 @@ export default function App() {
             reason === "transport close"
           ) {
             setErrorMessage("Disconnected from server. Please try again.");
-            // Stop streaming if it was active
             if (isVideoStreaming) {
               stopVideoStreaming();
             }
@@ -91,7 +88,7 @@ export default function App() {
         streamIntervalRef.current = null;
       }
     };
-  }, [isVideoMode]);
+  }, [isVideoMode, isVideoStreaming]);
 
   const activateCamera = () => {
     setCameraActive(true);
@@ -124,7 +121,6 @@ export default function App() {
         videoElement.readyState === videoElement.HAVE_ENOUGH_DATA
       ) {
         const canvas = document.createElement("canvas");
-        // Ensure we have valid dimensions
         const width = videoElement.videoWidth || 640;
         const height = videoElement.videoHeight || 480;
 
@@ -139,13 +135,8 @@ export default function App() {
         const context = canvas.getContext("2d");
         if (context) {
           try {
-            // Draw the video frame to canvas
             context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-            // Get the data URL with MIME type and quality
             const frameData = canvas.toDataURL("image/jpeg", 0.8);
-
-            // Verify we have valid data
             if (frameData && frameData.startsWith("data:image/jpeg;base64,")) {
               socketRef.current.emit("video_frame", {
                 frame: frameData,
@@ -162,7 +153,7 @@ export default function App() {
           }
         }
       }
-    }, 200); // Send frames every 200ms (5 fps) to reduce load
+    }, 100);
   };
 
   const stopVideoStreaming = () => {
@@ -261,15 +252,12 @@ export default function App() {
             if (videoRef.current) {
               videoRef.current.srcObject = stream;
 
-              // Listen for video being ready to play
               videoRef.current.onloadedmetadata = () => {
                 setVideoReady(true);
               };
 
-              // Start streaming once video is actually playing
               videoRef.current.onplaying = () => {
                 if (!isVideoStreaming) {
-                  // Give a slight delay to ensure everything is ready
                   setTimeout(() => {
                     startVideoStreaming();
                   }, 500);
@@ -327,7 +315,7 @@ export default function App() {
                 ref={videoRef}
                 autoPlay
                 playsInline
-                muted // Add muted to ensure video plays immediately on some browsers
+                muted 
                 style={{
                   width: "100%",
                   borderRadius: "8px",
@@ -645,7 +633,6 @@ export default function App() {
           value={deficiency}
           onChange={(e) => {
             setDeficiency(e.target.value);
-            // Reset current processing if in video mode
             if (isVideoMode && isVideoStreaming) {
               setProcessedVideoFrame(null);
             }
